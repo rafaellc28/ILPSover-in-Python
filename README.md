@@ -12,8 +12,8 @@ The input for the test programs is read from a file and must be a dictionary in 
 
 <table border="0">
   <tr><td>maximize</td><td>c<sup>T</sup>x</td><td></td></tr>
-  <tr><td></td><td>Ax &le;</td><td>b</td></tr>
-  <tr><td></td><td>x &ge;</td><td>0</td></tr>
+  <tr><td></td><td>Ax</td><td>&le; b</td></tr>
+  <tr><td></td><td>&nbsp;&nbsp;x</td><td>&ge; 0</td></tr>
 </table>
 
 The input files must be in the format:
