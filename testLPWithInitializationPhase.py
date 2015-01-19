@@ -93,8 +93,8 @@ def main(argv):
     sys.stdout.write(newDictionary.status)
     return
 
-  opt = Optimizer(newDictionary)
-  cuts, optmizedDict, status = opt.solveLinearProgrammingRelaxation()
+  opt = Optimizer()
+  cuts, optmizedDict, status = opt.solveLinearProgrammingRelaxation(newDictionary)
 
   if DEBUG:
     sys.stderr.write("Ootimized Dictionary\n")

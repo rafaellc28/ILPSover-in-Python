@@ -8,10 +8,8 @@ DEBUG = False
 
 # Encapsulate the execution of the pivot steps of a dictionary
 class Optimizer:
-
-  def __init__(self, dictionary, tolerance = mp.power(10,-6)):
-    self.dictionary = dictionary
-    self.tolerance = tolerance
+  INFEASIBLECODE = -2
+  INFEASIBLE = "INFEASIBLE"
 
   @staticmethod
   def _frac(num):
@@ -21,15 +19,17 @@ class Optimizer:
   def _distance(num):
     return mp.fabs(mp.fsub(num, mp.nint(num)))
 
-  def _isInteger(self, num):
-    return mp.almosteq(num, mp.nint(num), self.tolerance)
+  @staticmethod
+  def _isInteger(num, tolerance = mp.power(10,-6)):
+    return mp.almosteq(num, mp.nint(num), tolerance)
   
   # Solve the Linear Programming Relaxation Problem, e.g., all decision variables are real
   # Return the final dictionary with the status: FINAL, UNBOUNDED or INFEASIBLE
-  def solveLinearProgrammingRelaxation(self):
+  @staticmethod
+  def solveLinearProgrammingRelaxation(dictionary):
     
     # initial pivoting
-    entering, leaving, newDictionary = self.dictionary.pivot()
+    entering, leaving, newDictionary = dictionary.pivot()
     steps = 0
 
     if DEBUG:
@@ -51,35 +51,36 @@ class Optimizer:
   # Solve the Integer Linear Programming Problem, e.g., all decision variables are positive integers
   # Return the final dictionary with the status: FINAL, UNBOUNDED or INFEASIBLE
   # Use the Cutting Plane Method
-  def solveIntegerLinearProgrammingWithCuttingPlane(self):
+  @staticmethod
+  def solveIntegerLinearProgrammingWithCuttingPlane(dictionary, tolerance = mp.power(10,-6)):
     
     # cuts added
     cutsAdded = 0
 
     # Initialization Phase
-    self.dictionary = self.dictionary.initialDictionary()
+    dictionary = dictionary.initialDictionary()
 
     if DEBUG:
       sys.stderr.write("Dictionary After Initialization Phase\n")
-      sys.stderr.write(self.dictionary+"\n")
+      sys.stderr.write(dictionary+"\n")
     
     # If the dictionary is INFEASIBLE, return
-    if self.dictionary.statuscode < 0:
-      return 0, self.dictionary, self.dictionary.status
+    if dictionary.statuscode < 0:
+      return 0, dictionary, dictionary.status
     
     # Solve the relaxed problem
-    steps, newDictionary, status = self.solveLinearProgrammingRelaxation()
+    steps, newDictionary, status = Optimizer.solveLinearProgrammingRelaxation(dictionary)
 
     if DEBUG:
       sys.stderr.write("Primal Dictionary After First LP Relaxation Solve\n")
       sys.stderr.write(newDictionary+"\n")
     
     if newDictionary.statuscode < 0:
-      self.dictionary = newDictionary
+      dictionary = newDictionary
       return 0, newDictionary, status
     
     # get the basic variables with "non-integer values" (considering the tolerance)
-    varFractional = np.array( filter( (lambda (i,x): not self._isInteger(x)), zip( range(len(newDictionary.b)), newDictionary.b) ) )
+    varFractional = np.array( filter( (lambda (i,x): not Optimizer._isInteger(x, tolerance)), zip( range(len(newDictionary.b)), newDictionary.b) ) )
 
     if len(varFractional) > 0:
       varFractional = varFractional[:,0]
@@ -103,15 +104,14 @@ class Optimizer:
         sys.stderr.write(newDictionary+"\n")
 
       # the result primal from adding the cut planes is INFEASIBLE, but the dual is FEASIBLE
-      self.dictionary = newDictionary.dual()
+      dictionary = newDictionary.dual()
       
-      steps, newDictionary, status = self.solveLinearProgrammingRelaxation()
+      steps, newDictionary, status = Optimizer.solveLinearProgrammingRelaxation(dictionary)
 
       if newDictionary.statuscode < 0:
-        self.dictionary = newDictionary
-        self.dictionary.statuscode = -2
-        self.dictionary.status = "INFEASIBLE"
-        return 0, self.dictionary, self.dictionary.status
+        newDictionary.statuscode = Optimizer.INFEASIBLECODE
+        newDictionary.status = Optimizer.INFEASIBLE
+        return 0, newDictionary, newDictionary.status
 
       # return to the original primal dictionary
       newDictionary = newDictionary.dual()
@@ -121,12 +121,10 @@ class Optimizer:
         sys.stderr.write(newDictionary+"\n")
 
       # get the basic variables with "non-integer values" (considering the tolerance)
-      #varFractional = np.array(filter((lambda (i,x): Optimizer._distance(x) > self.tolerance), zip(range(len(newDictionary.b)), newDictionary.b)))
-      varFractional = np.array(filter((lambda (i,x): not self._isInteger(x)), zip(range(len(newDictionary.b)), newDictionary.b)))
+      #varFractional = np.array(filter((lambda (i,x): Optimizer._distance(x) > tolerance), zip(range(len(newDictionary.b)), newDictionary.b)))
+      varFractional = np.array(filter((lambda (i,x): not Optimizer._isInteger(x, tolerance)), zip(range(len(newDictionary.b)), newDictionary.b)))
       
       if len(varFractional) > 0:
         varFractional = varFractional[:,0]
-    
-    self.dictionary = newDictionary
     
     return cutsAdded, newDictionary, newDictionary.status

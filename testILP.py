@@ -80,8 +80,8 @@ def main(argv):
     sys.stderr.write("Original Dictionary\n")
     sys.stderr.write(str(dictionary)+"\n")
   
-  opt = Optimizer(dictionary)
-  cuts, optmizedDict, status = opt.solveIntegerLinearProgrammingWithCuttingPlane()
+  opt = Optimizer()
+  cuts, optmizedDict, status = opt.solveIntegerLinearProgrammingWithCuttingPlane(dictionary)
 
   if DEBUG:
     sys.stderr.write("Ootimized Dictionary\n")

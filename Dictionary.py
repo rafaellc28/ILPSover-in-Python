@@ -229,8 +229,8 @@ class Dictionary:
         print(dualDict)
       
       # optimize the dual of the new dictionary
-      opt = Optimizer(dualDict)
-      steps, dualOptmized, status = opt.solveLinearProgrammingRelaxation()
+      opt = Optimizer()
+      steps, dualOptmized, status = opt.solveLinearProgrammingRelaxation(dualDict)
       
       # if the optimization phase results in an Unbounded dictionary, 
       # then the original dictionary is Infeasible
