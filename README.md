@@ -2,13 +2,12 @@ ILPSover-in-Python
 ==================
 
 ILPSover developed in Python for the course
-https://www.coursera.org/course/linearprogramming
+https://www.coursera.org/course/linearprogramming.
 
-There are a Integer Linear Programming Solver using the Cutting Plane Method and 
-a Linear Programming Solver using the Simplex Algorithm
+This solver contains an Integer Linear Programming Solver that implements the Cutting Plane Method and 
+a Linear Programming Solver that implements the Simplex Algorithm.
 
-The input for the test programs is read from a file and must be a dictionary in the Standard Form:
-
+The input is a dictionary in the Standard Form:
 
 <table border="0">
   <tr><td>maximize</td><td>c<sup>T</sup>x</td><td></td></tr>
@@ -16,7 +15,7 @@ The input for the test programs is read from a file and must be a dictionary in 
   <tr><td></td><td>&nbsp;&nbsp;x</td><td>&ge; 0</td></tr>
 </table>
 
-The input files must be in the format:
+The input files must be in the following format:
 
 [Line 1] m n [m is the number of constraints and n is the number of variables]<br>
 [Line 2] B1 B2 ... Bm [m integers corresponding to the list of basic indices] <br>
